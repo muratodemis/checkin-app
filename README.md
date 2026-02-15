@@ -42,12 +42,12 @@ Open [http://localhost:3000](http://localhost:3000). Enter the password to acces
 
 ## Repo & CI
 
-- **GitHub:** [github.com/muratodemis/checkin-app](https://github.com/muratodemis/checkin-app)  
+- **GitHub:** [github.com/muratodemis/cowrie-checkin-app](https://github.com/muratodemis/cowrie-checkin-app)  
   `git pull` / `git push` ile güncelleme. Vercel’e bağladıktan sonra her `main` push’u otomatik production deploy tetikler.
 
 - **Vercel’i GitHub’a bağlamak (tek sefer):**  
   1. [vercel.com](https://vercel.com) → **Settings** → **Login Connections** → **GitHub** “Connect”.  
-  2. Proje **checkin-app** → **Settings** → **Git** → **Connect Git Repository** → **GitHub** → `muratodemis/checkin-app` seç.  
+  2. Proje **checkin-app** → **Settings** → **Git** → **Connect Git Repository** → **GitHub** → `muratodemis/cowrie-checkin-app` seç.  
   Bundan sonra `git push origin main` yeterli; deploy Vercel’de otomatik çalışır.
 
 ## Deploy
