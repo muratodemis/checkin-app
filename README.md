@@ -1,36 +1,113 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Check-in Manager
 
-## Getting Started
+Weekly 1:1 check-in management app — a single-screen, Notion-style editable table for managing daily standup notes across teams.
 
-First, run the development server:
+## Setup
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+### 1. Supabase
+
+Create a Supabase project and run the migration:
+
+```sql
+-- Copy and run the contents of supabase/migration.sql in the Supabase SQL editor
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Environment Variables
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Copy `.env.example` to `.env.local` and fill in your values:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+CHECKIN_PASSWORD=your-password
+```
 
-## Learn More
+### 3. Install & Run
 
-To learn more about Next.js, take a look at the following resources:
+```powershell
+npm install
+npm run dev
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Open [http://localhost:3000](http://localhost:3000). Enter the password to access the app.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Tech Stack
 
-## Deploy on Vercel
+- **Next.js 16** (App Router) + TypeScript
+- **shadcn/ui** + Tailwind CSS v4
+- **Supabase** (PostgreSQL)
+- **SWR** for client-side data fetching
+- **Geist** font
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Deploy
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Vercel
+
+Push to GitHub and connect to Vercel. Add environment variables in the Vercel dashboard.
+
+**murat.org:**  
+- **https://murat.org/** → Sade bir ana sayfa (Murat Ödemiş, CEO Univenn + LinkedIn / X logoları). Yönlendirme yok.  
+- **https://murat.org/5mins** → Check-in uygulaması.
+
+Domain **murat.org** ve **www.murat.org** Vercel projesine eklendi. Sadece DNS’i sen ayarlayacaksın:
+
+**Seçenek A – A + CNAME (Cloudflare vb. kullanıyorsan):**  
+Domain panelinde şu kayıtları ekle veya güncelle:
+
+| Tip   | İsim / Name | Değer / Target / Content   |
+|-------|-------------|----------------------------|
+| **A** | `@` (veya `murat.org`) | `76.76.21.21`             |
+| **CNAME** | `www` | `cname.vercel-dns.com`   |
+
+(Cloudflare’da “Proxied” yerine **DNS only** kullan; Vercel SSL kendi sertifikasını kullanacak.)
+
+**Seçenek B – Nameserver’ı Vercel’e vermek:**  
+Domain’i satın aldığın yerde (registrar) nameserver’ları şöyle değiştir:
+
+- `ns1.vercel-dns.com`
+- `ns2.vercel-dns.com`
+
+Kayıtlar yayıldıktan sonra (birkaç dakika–saat) **https://murat.org** ana sayfayı, **https://murat.org/5mins** uygulamayı açar.
+
+### Google Cloud Run
+
+1. **Gereksinimler:** [Google Cloud SDK](https://cloud.google.com/sdk/docs/install) kurulu olsun.  
+   `gcloud auth login` ve `gcloud config set project YOUR_PROJECT_ID` ile giriş yapın.
+
+2. **İlk deploy:**
+   ```bash
+   chmod +x scripts/deploy-cloudrun.sh
+   ./scripts/deploy-cloudrun.sh
+   ```
+   İsterseniz:
+   ```bash
+   export GCP_PROJECT_ID=my-project   # gerekirse
+   export GCP_REGION=europe-west1     # isteğe bağlı, varsayılan: europe-west1
+   ./scripts/deploy-cloudrun.sh
+   ```
+
+3. **Ortam değişkenleri:** Cloud Run konsolunda (Google Cloud Console → Cloud Run → servis → Edit & deploy → Variables & Secrets) şunları ekleyin:
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - `SUPABASE_SERVICE_ROLE_KEY` (tercihen)
+   - `CHECKIN_PASSWORD`
+
+   Veya deploy sırasında:
+   ```bash
+   gcloud run deploy checkin-app --source . --region europe-west1 \
+     --set-env-vars "NEXT_PUBLIC_SUPABASE_URL=...,NEXT_PUBLIC_SUPABASE_ANON_KEY=...,CHECKIN_PASSWORD=..."
+   ```
+
+4. **Herkese açmak (Forbidden hatası için):**  
+   Proje organizasyon ilkesi izin veriyorsa:
+   ```bash
+   gcloud run services add-iam-policy-binding checkin-app --project=PROJECT_ID --region=europe-west1 \
+     --member="allUsers" --role="roles/run.invoker"
+   ```
+   Organizasyon ilkesi `allUsers`’ı engelliyorsa: Google Cloud Console → **IAM & Admin** → **Organization policies** → `Domain restricted sharing` veya ilgili kısıtlamayı proje/organizasyon için gevşetin; ardından yukarıdaki komutu tekrar çalıştırın.  
+   Belirli bir kullanıcıya erişim vermek için:
+   ```bash
+   gcloud run services add-iam-policy-binding checkin-app --project=PROJECT_ID --region=europe-west1 \
+     --member="user:EMAIL" --role="roles/run.invoker"
+   ```
