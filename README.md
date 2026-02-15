@@ -40,11 +40,21 @@ Open [http://localhost:3000](http://localhost:3000). Enter the password to acces
 - **SWR** for client-side data fetching
 - **Geist** font
 
+## Repo & CI
+
+- **GitHub:** [github.com/muratodemis/checkin-app](https://github.com/muratodemis/checkin-app)  
+  `git pull` / `git push` ile güncelleme. Vercel’e bağladıktan sonra her `main` push’u otomatik production deploy tetikler.
+
+- **Vercel’i GitHub’a bağlamak (tek sefer):**  
+  1. [vercel.com](https://vercel.com) → **Settings** → **Login Connections** → **GitHub** “Connect”.  
+  2. Proje **checkin-app** → **Settings** → **Git** → **Connect Git Repository** → **GitHub** → `muratodemis/checkin-app` seç.  
+  Bundan sonra `git push origin main` yeterli; deploy Vercel’de otomatik çalışır.
+
 ## Deploy
 
 ### Vercel
 
-Push to GitHub and connect to Vercel. Add environment variables in the Vercel dashboard.
+Proje GitHub’a push edildi. Vercel’i yukarıdaki gibi GitHub repo’ya bağla; environment variables’ı Vercel dashboard’da ekle.
 
 **murat.org:**  
 - **https://murat.org/** → Sade bir ana sayfa (Murat Ödemiş, CEO Univenn + LinkedIn / X logoları). Yönlendirme yok.  
