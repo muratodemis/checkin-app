@@ -72,6 +72,12 @@ Domain panelinde şu kayıtları ekle veya güncelle:
 
 (Cloudflare’da “Proxied” yerine **DNS only** kullan; Vercel SSL kendi sertifikasını kullanacak.)
 
+**name.com’da (murat.org):**  
+1. [name.com](https://www.name.com) → giriş yap → **MY DOMAINS** → **murat.org** → **Manage DNS Records**.  
+2. **A kaydı:** Type **A**, Host **boş bırak** (veya `@`), Answer **76.76.21.21**, TTL 300 → **Add Record**.  
+3. **CNAME (www):** Type **CNAME**, Host **www**, Answer **cname.vercel-dns.com**, TTL 300 → **Add Record**.  
+(Eski A/CNAME’leri silmeden önce not al; sadece çakışanları değiştir.)
+
 **Seçenek B – Nameserver’ı Vercel’e vermek:**  
 Domain’i satın aldığın yerde (registrar) nameserver’ları şöyle değiştir:
 
