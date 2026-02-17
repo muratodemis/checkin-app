@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 interface TeamGroupProps {
   team: TeamWithMembers;
   activeDays: number[];
+  weekId?: string;
   getNoteContent: (memberId: string, day: number) => string;
   saveNote: (memberId: string, day: number, content: string) => void;
   getSkipMeta: (memberId: string, day: number) => MeetingSkipMeta | null;
@@ -21,6 +22,7 @@ interface TeamGroupProps {
 export function TeamGroup({
   team,
   activeDays,
+  weekId,
   getNoteContent,
   saveNote,
   getSkipMeta,
@@ -36,23 +38,23 @@ export function TeamGroup({
       {/* Team header row */}
       <TableRow
         onClick={() => setCollapsed(!collapsed)}
-        className="cursor-pointer select-none hover:bg-[#f3f4f6] bg-[#f8f9fb] border-b border-[#eaeaea]"
+        className="cursor-pointer select-none hover:bg-stone-100/60 bg-stone-50/80 border-b border-stone-200"
       >
         <TableCell
           colSpan={activeDays.length + 1}
-          className="px-4 py-1.5 border-r-0 whitespace-normal"
+          className="px-5 py-2 border-r-0 whitespace-normal"
         >
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5">
             <ChevronRight
               className={cn(
-                "h-3 w-3 text-[#9ca3af] transition-transform duration-150",
+                "h-3.5 w-3.5 text-stone-400 transition-transform duration-200",
                 !collapsed && "rotate-90"
               )}
             />
-            <span className="text-xs font-semibold text-[#111111] uppercase tracking-wide">
+            <span className="text-xs font-semibold text-stone-700 uppercase tracking-wider">
               {team.name}
             </span>
-            <span className="text-[11px] text-[#6e6e6e]">
+            <span className="text-[11px] text-stone-400 bg-stone-200/50 px-1.5 py-0.5 rounded-md font-medium">
               {members.length}
             </span>
           </div>
@@ -66,6 +68,7 @@ export function TeamGroup({
             key={member.id}
             member={member}
             activeDays={activeDays}
+            weekId={weekId}
             getNoteContent={getNoteContent}
             saveNote={saveNote}
             getSkipMeta={getSkipMeta}

@@ -48,5 +48,44 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
+  // Sync to checkin_feedback general_notes
+  if (content !== undefined) {
+    await supabase
+      .from("checkin_feedback")
+      .upsert(
+        {
+          member_id,
+          week_id,
+          day_number: day,
+          question_type: "general_notes",
+          question_index: 0,
+          answer_text: content,
+        },
+        { onConflict: "member_id,week_id,day_number,question_type,question_index" }
+      )
+      .then(() => {});
+  }
+
+  // Trigger AI generation for long notes (100+ chars), fire-and-forget
+  if (content && content.trim().length >= 100) {
+    const { data: member } = await supabase.from("members").select("name").eq("id", member_id).single();
+    const baseUrl = request.nextUrl.origin;
+    const basePath = "/5mins";
+    fetch(`${baseUrl}${basePath}/api/ai-generate`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: request.headers.get("cookie") || "",
+      },
+      body: JSON.stringify({
+        member_id,
+        week_id,
+        day_number: day,
+        content,
+        member_name: member?.name || "Unknown",
+      }),
+    }).catch((err) => console.log("[notes] AI trigger error:", err));
+  }
+
   return NextResponse.json(data);
 }

@@ -3,6 +3,7 @@
 import useSWR from "swr";
 import { useCallback } from "react";
 import { TeamWithMembers } from "@/types";
+import { apiPath } from "@/lib/api";
 
 async function fetcher(url: string) {
   const res = await fetch(url);
@@ -17,7 +18,7 @@ export function useTeams() {
     error,
     isLoading,
     mutate,
-  } = useSWR<TeamWithMembers[]>("/api/teams", fetcher, {
+  } = useSWR<TeamWithMembers[]>(apiPath("api/teams"), fetcher, {
     fallbackData: [],
     revalidateOnFocus: false,
   });
@@ -26,7 +27,7 @@ export function useTeams() {
 
   const createTeam = useCallback(
     async (name: string) => {
-      await fetch("/api/teams", {
+      await fetch(apiPath("api/teams"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name }),
@@ -38,7 +39,7 @@ export function useTeams() {
 
   const updateTeam = useCallback(
     async (id: string, updates: { name?: string; sort_order?: number }) => {
-      await fetch(`/api/teams/${id}`, {
+      await fetch(apiPath(`api/teams/${id}`), {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updates),
@@ -50,7 +51,7 @@ export function useTeams() {
 
   const deleteTeam = useCallback(
     async (id: string) => {
-      await fetch(`/api/teams/${id}`, { method: "DELETE" });
+      await fetch(apiPath(`api/teams/${id}`), { method: "DELETE" });
       mutate();
     },
     [mutate]
@@ -63,7 +64,7 @@ export function useTeams() {
       avatar_url?: string;
       team_id: string;
     }) => {
-      await fetch("/api/members", {
+      await fetch(apiPath("api/members"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(memberData),
@@ -83,7 +84,7 @@ export function useTeams() {
         team_id?: string;
       }
     ) => {
-      await fetch(`/api/members/${id}`, {
+      await fetch(apiPath(`api/members/${id}`), {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updates),
@@ -95,7 +96,7 @@ export function useTeams() {
 
   const deactivateMember = useCallback(
     async (id: string) => {
-      await fetch(`/api/members/${id}`, { method: "DELETE" });
+      await fetch(apiPath(`api/members/${id}`), { method: "DELETE" });
       mutate();
     },
     [mutate]

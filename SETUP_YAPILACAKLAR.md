@@ -12,19 +12,42 @@ Kaydet. 5–30 dakika içinde murat.org ve www.murat.org Vercel’e gider.
 
 ---
 
-## 2. Vercel environment variables (Supabase kullanıyorsan)
+## 2. Supabase (giriş yaptıysan – tek seferlik)
 
-Check-in uygulaması Supabase kullanıyor. Canlıda çalışması için:
+Supabase’e zaten giriş yaptıysan sırayla şunları yap:
 
-1. [vercel.com](https://vercel.com) → **checkin-app** → **Settings** → **Environment Variables**
-2. Şunları ekle (Production işaretli):
-   - `NEXT_PUBLIC_SUPABASE_URL` = Supabase proje URL’in
-   - `NEXT_PUBLIC_SUPABASE_ANON_KEY` = Supabase anon key
-   - `CHECKIN_PASSWORD` = **zaten 3767** (ekli)
-   - İstersen: `SUPABASE_SERVICE_ROLE_KEY`
-3. **Save** → **Deployments** → son deploy’da **Redeploy**
+### 2.1 Proje
 
-Supabase kullanmayacaksan bu adımı atlayabilirsin (uygulama placeholder ile çalışır, veri olmaz).
+- [supabase.com/dashboard](https://supabase.com/dashboard) → **New project** (yoksa mevcut projeyi seç).
+- Organization + proje adı (örn. `checkin-app`), şifre belirle, region seç → **Create**.
+
+### 2.2 Veritabanı şeması
+
+- Sol menü: **SQL Editor** → **New query**.
+- Bu repo’daki **`supabase/migration.sql`** dosyasının **tüm içeriğini** kopyala, yapıştır.
+- **Run** (veya Ctrl/Cmd+Enter). “Success” görmelisin.
+
+### 2.3 API anahtarları
+
+- Sol menü: **Project Settings** (dişli) → **API**.
+- Şunları kopyala (ileride Vercel’e yapıştıracaksın):
+  - **Project URL** → `NEXT_PUBLIC_SUPABASE_URL`
+  - **anon public** key → `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+  - **service_role** key → `SUPABASE_SERVICE_ROLE_KEY`
+
+### 2.4 Vercel’e ekle
+
+1. [vercel.com](https://vercel.com) → **checkin-app** → **Settings** → **Environment Variables**.
+2. Şunları ekle (Production işaretli, değerleri Supabase’ten yapıştır):
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - `SUPABASE_SERVICE_ROLE_KEY`
+   - `CHECKIN_PASSWORD` = **3767** (zaten varsa dokunma).
+3. **Save** → **Deployments** → son deploy’da **Redeploy**.
+
+Bunları yaptıktan sonra murat.org/5mins canlıda Supabase’e bağlı çalışır.
+
+**İstersen migration’ı CLI ile de atabilirsin:** Proje oluşturduktan sonra dashboard’daki proje URL’inde `project/` sonrası gelen kodu (project ref) al. Terminalde: `npx supabase login`, `npx supabase link --project-ref BU_REF`, `npx supabase db push`. (Şema zaten `supabase/migrations/` içinde.)
 
 ---
 

@@ -4,6 +4,7 @@ import { useState, useCallback } from "react";
 import useSWR from "swr";
 import { Week, WeeklyQuestion } from "@/types";
 import { getMondayOfWeek, getAdjacentMonday } from "@/lib/utils";
+import { apiPath } from "@/lib/api";
 
 async function fetcher(url: string) {
   const res = await fetch(url);
@@ -19,7 +20,7 @@ export function useWeek() {
     error,
     isLoading,
     mutate: mutateWeek,
-  } = useSWR<Week>(`/api/weeks?date=${weekStart}`, fetcher, {
+  } = useSWR<Week>(apiPath(`api/weeks?date=${weekStart}`), fetcher, {
     revalidateOnFocus: false,
   });
 
@@ -27,7 +28,7 @@ export function useWeek() {
     data: questions,
     mutate: mutateQuestions,
   } = useSWR<WeeklyQuestion | null>(
-    week?.id ? `/api/weeks/${week.id}/questions` : null,
+    week?.id ? apiPath(`api/weeks/${week.id}/questions`) : null,
     fetcher,
     { revalidateOnFocus: false }
   );
@@ -44,7 +45,7 @@ export function useWeek() {
     async (day: number) => {
       if (!week?.id || !week.active_days) return;
       const newDays = [...week.active_days, day].sort((a, b) => a - b);
-      await fetch(`/api/weeks/${week.id}`, {
+      await fetch(apiPath(`api/weeks/${week.id}`), {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ active_days: newDays }),
@@ -58,7 +59,7 @@ export function useWeek() {
     async (day: number) => {
       if (!week?.id || !week.active_days) return;
       const newDays = week.active_days.filter((d) => d !== day);
-      await fetch(`/api/weeks/${week.id}`, {
+      await fetch(apiPath(`api/weeks/${week.id}`), {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ active_days: newDays }),
@@ -71,7 +72,7 @@ export function useWeek() {
   const saveQuestions = useCallback(
     async (questionList: string[]) => {
       if (!week?.id) return;
-      await fetch(`/api/weeks/${week.id}/questions`, {
+      await fetch(apiPath(`api/weeks/${week.id}/questions`), {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ questions: questionList }),

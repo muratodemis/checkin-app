@@ -1,6 +1,6 @@
 "use client";
 
-import { Plus, MessageSquare, Settings, Users, ListTree, List } from "lucide-react";
+import { Plus, MessageSquare, Settings, Users, ListTree, List, CalendarDays } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -59,17 +59,20 @@ export function CheckinTable() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <p className="text-sm text-muted-foreground">Yükleniyor...</p>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: "#fafaf9" }}>
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 rounded-full border-2 border-violet-200 border-t-violet-600 animate-spin" />
+          <p className="text-sm text-stone-400">Yükleniyor...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen" style={{ background: "#fafaf9" }}>
       {/* ─── HEADER ─── */}
-      <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-sm border-b border-[#eaeaea]">
-        <div className="max-w-[1600px] mx-auto px-6 py-2.5">
+      <header className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-stone-200/60">
+        <div className="max-w-[1600px] mx-auto px-8 py-3">
           <div className="flex items-center justify-between">
             <WeekNavigator
               weekStart={weekStart}
@@ -77,35 +80,31 @@ export function CheckinTable() {
               onNext={goToNextWeek}
             />
 
-            <div className="flex items-center gap-0.5">
+            <div className="flex items-center gap-1">
               {/* Gruplama toggle */}
-              <Button
-                variant="ghost"
-                size="sm"
+              <button
                 onClick={() => setIsGrouped((prev) => !prev)}
-                className="text-[13px] text-[#111111] hover:text-[#111111] gap-1.5 h-8 font-medium"
                 title={isGrouped ? "Gruplamayı kapat" : "Gruplamayı aç"}
+                className="flex items-center gap-1.5 h-8 px-3 rounded-lg text-[13px] font-medium text-stone-600 hover:text-stone-900 hover:bg-stone-100 transition-colors"
               >
                 {isGrouped ? <ListTree className="h-3.5 w-3.5" /> : <List className="h-3.5 w-3.5" />}
                 {isGrouped ? "Gruplu" : "Grupsuz"}
-              </Button>
+              </button>
 
               {/* + Gün Ekle */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="sm"
+                  <button
                     disabled={availableDays.length === 0}
-                    className="text-[13px] text-[#111111] hover:text-[#111111] gap-1.5 h-8 font-medium"
+                    className="flex items-center gap-1.5 h-8 px-3 rounded-lg text-[13px] font-medium text-stone-600 hover:text-stone-900 hover:bg-stone-100 transition-colors disabled:opacity-40"
                   >
                     <Plus className="h-3.5 w-3.5" />
                     Gün Ekle
-                  </Button>
+                  </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="min-w-[150px]">
+                <DropdownMenuContent align="end" className="min-w-[150px] rounded-xl border-stone-200 shadow-lg shadow-stone-200/50">
                   {availableDays.map((day) => (
-                    <DropdownMenuItem key={day} onClick={() => addDay(day)} className="text-[13px]">
+                    <DropdownMenuItem key={day} onClick={() => addDay(day)} className="text-[13px] rounded-lg">
                       {DAY_NAMES[day]}
                     </DropdownMenuItem>
                   ))}
@@ -113,44 +112,46 @@ export function CheckinTable() {
               </DropdownMenu>
 
               {/* Sorular */}
-              <Button
-                variant={showQuestions ? "secondary" : "ghost"}
-                size="sm"
+              <button
                 onClick={() => setShowQuestions(!showQuestions)}
-                className="text-[13px] text-[#111111] hover:text-[#111111] gap-1.5 h-8 font-medium"
+                className={`flex items-center gap-1.5 h-8 px-3 rounded-lg text-[13px] font-medium transition-colors ${
+                  showQuestions
+                    ? "bg-violet-100 text-violet-700"
+                    : "text-stone-600 hover:text-stone-900 hover:bg-stone-100"
+                }`}
               >
                 <MessageSquare className="h-3.5 w-3.5" />
                 Sorular
-              </Button>
+              </button>
 
               {/* Takım Yönet */}
-              <Button
-                variant="ghost"
-                size="sm"
+              <button
                 onClick={() => setShowTeamManager(true)}
-                className="text-[13px] text-[#111111] hover:text-[#111111] gap-1.5 h-8 font-medium"
+                className="flex items-center gap-1.5 h-8 px-3 rounded-lg text-[13px] font-medium text-stone-600 hover:text-stone-900 hover:bg-stone-100 transition-colors"
               >
                 <Settings className="h-3.5 w-3.5" />
                 Takım Yönet
-              </Button>
+              </button>
             </div>
           </div>
 
           {showQuestions && (
-            <WeeklyQuestions
-              questions={activeQuestions}
-              onSave={saveQuestions}
-              onClose={() => setShowQuestions(false)}
-            />
+            <div className="mt-3">
+              <WeeklyQuestions
+                questions={activeQuestions}
+                onSave={saveQuestions}
+                onClose={() => setShowQuestions(false)}
+              />
+            </div>
           )}
         </div>
       </header>
 
       {/* ─── QUESTIONS BAR ─── */}
       {!showQuestions && activeQuestions.length > 0 && (
-        <div className="max-w-[1600px] mx-auto px-6 pt-4">
-          <div className="flex items-center gap-3 px-3.5 py-2 bg-[#f8f9fb] rounded-md text-[12px] text-[#6e6e6e]">
-            <MessageSquare className="h-3.5 w-3.5 shrink-0 text-[#9ca3af]" />
+        <div className="max-w-[1600px] mx-auto px-8 pt-5">
+          <div className="flex items-center gap-3 px-4 py-2.5 bg-violet-50 border border-violet-100 rounded-xl text-[12px] text-violet-700">
+            <MessageSquare className="h-3.5 w-3.5 shrink-0 text-violet-400" />
             {activeQuestions.map((q: string, i: number) => (
               <span key={i} className="whitespace-nowrap">{i + 1}. {q}</span>
             ))}
@@ -159,30 +160,33 @@ export function CheckinTable() {
       )}
 
       {/* ─── TABLE ─── */}
-      <div className="max-w-[1600px] mx-auto px-6 py-4">
+      <div className="max-w-[1600px] mx-auto px-8 py-5">
         {safeTeams.length === 0 ? (
           /* Empty state */
           <div className="flex flex-col items-center justify-center py-24 text-center">
-            <div className="w-14 h-14 rounded-2xl bg-secondary flex items-center justify-center mb-5">
-              <Users className="h-6 w-6 text-muted-foreground" />
+            <div className="w-16 h-16 rounded-2xl bg-stone-100 flex items-center justify-center mb-5">
+              <Users className="h-7 w-7 text-stone-400" />
             </div>
-            <h2 className="text-base font-semibold text-foreground mb-1.5">Henüz takım eklenmemiş</h2>
-            <p className="text-sm text-muted-foreground mb-6 max-w-[360px]">
+            <h2 className="text-lg font-semibold text-stone-900 mb-1.5">Henüz takım eklenmemiş</h2>
+            <p className="text-sm text-stone-500 mb-6 max-w-[360px]">
               Başlamak için takım ve üye ekleyin. Check-in notlarınız burada görünecek.
             </p>
-            <Button onClick={() => setShowTeamManager(true)} className="gap-2">
+            <button
+              onClick={() => setShowTeamManager(true)}
+              className="flex items-center gap-2 h-10 px-5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-sm font-medium transition-colors"
+            >
               <Plus className="h-4 w-4" />
               Takım Ekle
-            </Button>
+            </button>
           </div>
         ) : (
           /* ─── THE TABLE ─── */
-          <div className="rounded-lg border border-[#eaeaea] bg-white overflow-hidden">
+          <div className="rounded-2xl border border-stone-200 bg-white overflow-hidden shadow-sm shadow-stone-100">
             <Table>
               <TableHeader>
-                <TableRow className="hover:bg-transparent border-b border-[#eaeaea]">
+                <TableRow className="hover:bg-transparent border-b border-stone-200">
                   {/* İsim column */}
-                  <TableHead className="sticky left-0 z-20 min-w-[240px] bg-[#f8f9fb] px-4 py-2 text-xs font-medium text-[#6e6e6e] uppercase tracking-wide border-r border-[#eaeaea]">
+                  <TableHead className="sticky left-0 z-20 min-w-[240px] bg-stone-50 px-5 py-3 text-xs font-semibold text-stone-500 uppercase tracking-wider border-r border-stone-200">
                     İsim
                   </TableHead>
 
@@ -206,6 +210,7 @@ export function CheckinTable() {
                         key={team.id}
                         team={team}
                         activeDays={activeDays}
+                        weekId={week?.id}
                         getNoteContent={getNoteContent}
                         saveNote={saveNote}
                         getSkipMeta={getSkipMeta}
@@ -220,6 +225,7 @@ export function CheckinTable() {
                           key={`${team.id}-${member.id}`}
                           member={member}
                           activeDays={activeDays}
+                          weekId={week?.id}
                           getNoteContent={getNoteContent}
                           saveNote={saveNote}
                           getSkipMeta={getSkipMeta}

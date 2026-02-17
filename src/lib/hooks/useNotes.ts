@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import useSWR from "swr";
 import { CheckinNote, MeetingSkipMeta } from "@/types";
+import { apiPath } from "@/lib/api";
 
 async function fetcher(url: string) {
   const res = await fetch(url);
@@ -16,7 +17,7 @@ export function useNotes(weekId: string | undefined) {
     data,
     mutate,
   } = useSWR<CheckinNote[]>(
-    weekId ? `/api/notes?week_id=${weekId}` : null,
+    weekId ? apiPath(`api/notes?week_id=${weekId}`) : null,
     fetcher,
     { fallbackData: [], revalidateOnFocus: false }
   );
@@ -103,7 +104,7 @@ export function useNotes(weekId: string | undefined) {
       // Debounce the actual save
       const timer = setTimeout(async () => {
         try {
-          await fetch("/api/notes", {
+          await fetch(apiPath("api/notes"), {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({

@@ -3,6 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "setup:supabase": "./scripts/setup-supabase-and-vercel.sh",
+    "seed:team": "npx tsx scripts/seed-univenn-team.ts",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
@@ -11,6 +13,7 @@
     "deploy:preview": "vercel deploy -y"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.74.0",
     "@supabase/supabase-js": "^2.95.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

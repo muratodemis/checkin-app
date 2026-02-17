@@ -1,13 +1,13 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
-import { PhoneMissed } from "lucide-react";
+import { PhoneMissed, LayoutDashboard } from "lucide-react";
 import { TableCell } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MeetingSkipMeta } from "@/types";
+import Link from "next/link";
 
 interface NoteCellProps {
   content: string;
@@ -16,6 +16,9 @@ interface NoteCellProps {
   onSetSkipMeta: (meta: MeetingSkipMeta | null) => void;
   isSaving: boolean;
   isSaved: boolean;
+  memberId?: string;
+  weekId?: string;
+  day?: number;
 }
 
 export function NoteCell({
@@ -25,6 +28,9 @@ export function NoteCell({
   onSetSkipMeta,
   isSaving,
   isSaved,
+  memberId,
+  weekId,
+  day,
 }: NoteCellProps) {
   const [value, setValue] = useState(content);
   const [focused, setFocused] = useState(false);
@@ -57,9 +63,9 @@ export function NoteCell({
   const isSkipped = !isDone && !!skipMeta;
   const skipText =
     skipMeta?.reason === "unreachable"
-      ? "Ulasamadim"
+      ? "Ulaşamadım"
       : skipMeta?.reason === "on_leave"
-        ? "Izinli"
+        ? "İzinli"
         : skipMeta?.reason === "other"
           ? (skipMeta.other_text || "Other")
           : "";
@@ -69,7 +75,6 @@ export function NoteCell({
       setShowOtherInput(true);
       return;
     }
-
     setShowOtherInput(false);
     setOtherReason("");
     onSetSkipMeta({ reason });
@@ -92,10 +97,10 @@ export function NoteCell({
   return (
     <TableCell
       className={cn(
-        "relative min-w-[220px] p-0 align-top border-r border-[#eaeaea] whitespace-normal transition-colors",
-        isDone && "bg-[#f8fcf9]",
-        isSkipped && "bg-[#fdf9fb]",
-        focused && "ring-2 ring-[#d1d5db] ring-inset"
+        "group relative min-w-[220px] p-0 align-top border-r border-stone-100 whitespace-normal transition-colors",
+        isDone && "bg-emerald-50/30",
+        isSkipped && "bg-rose-50/30",
+        focused && "ring-2 ring-violet-200 ring-inset"
       )}
     >
       <textarea
@@ -106,8 +111,19 @@ export function NoteCell({
         onBlur={() => setFocused(false)}
         placeholder={skipText}
         rows={3}
-        className="block w-full min-h-[56px] px-3 py-2 text-[13px] leading-relaxed text-[#111111] bg-transparent border-none outline-none resize-none font-[inherit] placeholder:text-[#9ca3af]"
+        className="block w-full min-h-[56px] px-3 py-2.5 text-[13px] leading-relaxed text-stone-800 bg-transparent border-none outline-none resize-none font-[inherit] placeholder:text-stone-300"
       />
+
+      {/* Detail page icon — bottom-right, always visible */}
+      {memberId && weekId && day && (
+        <Link
+          href={`/members/${memberId}/checkin/${weekId}/${day}`}
+          title="Detay sayfası"
+          className="absolute bottom-1.5 right-1.5 h-5 w-5 rounded-md flex items-center justify-center border bg-white/80 border-stone-200 text-stone-300 hover:text-violet-600 hover:border-violet-300 hover:bg-violet-50 transition-all"
+        >
+          <LayoutDashboard className="h-3 w-3" />
+        </Link>
+      )}
 
       <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
         <PopoverTrigger asChild>
@@ -115,75 +131,82 @@ export function NoteCell({
             type="button"
             title="Toplantı yapılmadı sebebi"
             className={cn(
-              "absolute top-1.5 right-1.5 h-5 w-5 rounded flex items-center justify-center border transition-colors",
+              "absolute top-1.5 right-1.5 h-5 w-5 rounded-md flex items-center justify-center border transition-colors",
               isSkipped
-                ? "bg-[#fbf2f6] border-[#f2dfe6] text-[#b18a98]"
-                : "bg-white border-[#e5e7eb] text-[#9ca3af] hover:text-[#6b7280] hover:border-[#d1d5db]"
+                ? "bg-rose-50 border-rose-200 text-rose-400"
+                : "bg-white/80 border-stone-200 text-stone-300 hover:text-stone-500 hover:border-stone-300"
             )}
           >
             <PhoneMissed className="h-3 w-3" />
           </button>
         </PopoverTrigger>
-        <PopoverContent align="end" className="w-64 p-2">
-          <div className="space-y-1">
+        <PopoverContent align="end" className="w-56 p-1.5 rounded-xl border-stone-200 shadow-lg shadow-stone-200/50">
+          <div className="space-y-0.5">
             <button
               type="button"
-              className="w-full text-left text-xs px-2 py-1.5 rounded hover:bg-[#f3f4f6] text-[#111111]"
+              className="w-full text-left text-[13px] px-2.5 py-1.5 rounded-lg hover:bg-stone-50 text-stone-700 transition-colors"
               onClick={() => selectReason("unreachable")}
             >
               Ulaşamadım
             </button>
             <button
               type="button"
-              className="w-full text-left text-xs px-2 py-1.5 rounded hover:bg-[#f3f4f6] text-[#111111]"
+              className="w-full text-left text-[13px] px-2.5 py-1.5 rounded-lg hover:bg-stone-50 text-stone-700 transition-colors"
               onClick={() => selectReason("on_leave")}
             >
               İzinli
             </button>
             <button
               type="button"
-              className="w-full text-left text-xs px-2 py-1.5 rounded hover:bg-[#f3f4f6] text-[#111111]"
+              className="w-full text-left text-[13px] px-2.5 py-1.5 rounded-lg hover:bg-stone-50 text-stone-700 transition-colors"
               onClick={() => selectReason("other")}
             >
               Other
             </button>
             {isSkipped && (
-              <button
-                type="button"
-                className="w-full text-left text-xs px-2 py-1.5 rounded hover:bg-[#f3f4f6] text-[#6e6e6e]"
-                onClick={() => {
-                  onSetSkipMeta(null);
-                  setShowOtherInput(false);
-                  setOtherReason("");
-                  setPopoverOpen(false);
-                }}
-              >
-                Toplantı yapıldı (işareti kaldır)
-              </button>
+              <>
+                <div className="border-t border-stone-100 my-1" />
+                <button
+                  type="button"
+                  className="w-full text-left text-[13px] px-2.5 py-1.5 rounded-lg hover:bg-stone-50 text-stone-400 transition-colors"
+                  onClick={() => {
+                    onSetSkipMeta(null);
+                    setShowOtherInput(false);
+                    setOtherReason("");
+                    setPopoverOpen(false);
+                  }}
+                >
+                  İşareti kaldır
+                </button>
+              </>
             )}
           </div>
 
           {showOtherInput && (
-            <div className="mt-2 space-y-2 border-t border-[#eaeaea] pt-2">
+            <div className="mt-1.5 space-y-1.5 border-t border-stone-100 pt-1.5">
               <Input
                 value={otherReason}
                 onChange={(e) => setOtherReason(e.target.value)}
                 placeholder="Sebep yaz..."
-                className="h-8 text-xs"
+                className="h-8 text-[13px] rounded-lg border-stone-200"
               />
-              <Button type="button" size="xs" className="w-full" onClick={saveOtherReason}>
+              <button
+                type="button"
+                onClick={saveOtherReason}
+                className="w-full h-8 rounded-lg bg-stone-900 text-white text-[13px] font-medium hover:bg-stone-800 transition-colors"
+              >
                 Kaydet
-              </Button>
+              </button>
             </div>
           )}
         </PopoverContent>
       </Popover>
 
       {isSaving && (
-        <span className="absolute top-1.5 right-8 text-[11px] text-[#9ca3af]">...</span>
+        <span className="absolute top-1.5 right-8 text-[11px] text-stone-300">...</span>
       )}
       {isSaved && !isSaving && (
-        <span className="absolute top-1.5 right-8 text-[11px] text-[#6e6e6e] animate-saved-fade">
+        <span className="absolute top-1.5 right-8 text-[11px] text-emerald-500 animate-saved-fade">
           ✓
         </span>
       )}

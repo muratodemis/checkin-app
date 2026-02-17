@@ -16,15 +16,26 @@ export function DayColumnHeader({ day, weekStart, hasNotes, onRemove }: DayColum
   const dateStr = getDayDate(weekStart, day);
   const shortDate = formatDateShort(dateStr);
 
+  const isToday = (() => {
+    const now = new Date();
+    const d = new Date(dateStr + "T00:00:00");
+    return now.toDateString() === d.toDateString();
+  })();
+
   return (
-    <TableHead className="group relative min-w-[220px] bg-[#f8f9fb] px-4 py-2 align-bottom border-r border-[#eaeaea]">
-      <span className="text-xs font-medium text-[#111111]">
-        {DAY_NAMES[day]}
-      </span>
-      <span className="text-gray-300 mx-1.5">·</span>
-      <span className="text-xs font-normal text-[#6e6e6e]">
-        {shortDate}
-      </span>
+    <TableHead className="group relative min-w-[220px] bg-stone-50 px-5 py-3 align-bottom border-r border-stone-200">
+      <div className="flex items-center gap-2">
+        {isToday && (
+          <span className="w-1.5 h-1.5 rounded-full bg-violet-500 shrink-0" />
+        )}
+        <span className="text-xs font-semibold text-stone-800">
+          {DAY_NAMES[day]}
+        </span>
+        <span className="text-stone-300">·</span>
+        <span className="text-xs font-normal text-stone-400">
+          {shortDate}
+        </span>
+      </div>
 
       <button
         onClick={(e) => {
@@ -38,7 +49,7 @@ export function DayColumnHeader({ day, weekStart, hasNotes, onRemove }: DayColum
           }
         }}
         title="Günü kaldır"
-        className="absolute top-1.5 right-1.5 h-5 w-5 flex items-center justify-center rounded text-[#9ca3af] hover:text-[#111111] hover:bg-[#f3f4f6] opacity-0 group-hover:opacity-100 transition-opacity"
+        className="absolute top-2 right-2 h-5 w-5 flex items-center justify-center rounded-md text-stone-300 hover:text-stone-600 hover:bg-stone-200/60 opacity-0 group-hover:opacity-100 transition-all"
       >
         <X className="h-3 w-3" />
       </button>
