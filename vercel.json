@@ -1,5 +1,8 @@
 {
   "rewrites": [
-    { "source": "/", "destination": "/5mins/api/landing" }
+    { "source": "/", "destination": "/5mins/api/landing" },
+    { "source": "/tools", "destination": "/5mins/api/tools-landing" },
+    { "source": "/knock", "destination": "https://knock-the-door-production.up.railway.app/knock" },
+    { "source": "/knock/:path*", "destination": "https://knock-the-door-production.up.railway.app/knock/:path*" }
   ]
 }
