@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase";
+import * as mem from "@/lib/store";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
@@ -9,6 +10,10 @@ export async function GET(request: NextRequest) {
 
   if (!memberId || !weekId || !day) {
     return NextResponse.json({ error: "memberId, weekId, day required" }, { status: 400 });
+  }
+
+  if (mem.isMemoryMode()) {
+    return NextResponse.json(mem.getAiNotes(memberId, weekId, Number(day)));
   }
 
   const supabase = createServerClient();
@@ -26,8 +31,13 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
-  const supabase = createServerClient();
 
+  if (mem.isMemoryMode()) {
+    const note = mem.createAiNote(body);
+    return NextResponse.json(note);
+  }
+
+  const supabase = createServerClient();
   const { data, error } = await supabase
     .from("checkin_ai_notes")
     .insert({

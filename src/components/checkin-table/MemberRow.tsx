@@ -14,16 +14,28 @@ interface MemberRowProps {
   setSkipMeta: (memberId: string, day: number, meta: MeetingSkipMeta | null) => void;
   isSaving: (memberId: string, day: number) => boolean;
   isSaved: (memberId: string, day: number) => boolean;
+  showWeeklyCol?: boolean;
+  noMeetingDays?: number[];
+  expandedDay?: number | null;
+  allMemberIds?: { id: string; name: string }[];
 }
 
-const AVATAR_COLORS = [
-  "bg-violet-100 text-violet-600",
-  "bg-amber-100 text-amber-600",
-  "bg-emerald-100 text-emerald-600",
-  "bg-rose-100 text-rose-600",
-  "bg-sky-100 text-sky-600",
-  "bg-orange-100 text-orange-600",
-  "bg-teal-100 text-teal-600",
+// Takım bazlı avatar renkleri
+const TEAM_AVATAR_COLORS: Record<string, string> = {
+  "t-yonetim":     "bg-violet-100 text-violet-700",
+  "t-fullstack":   "bg-amber-100 text-amber-700",
+  "t-frontend":    "bg-amber-100 text-amber-700",
+  "t-mobile":      "bg-amber-100 text-amber-700",
+  "t-urun-tasarim":"bg-sky-100 text-sky-700",
+  "t-operasyon":   "bg-emerald-100 text-emerald-700",
+  "t-stajyer":     "bg-rose-100 text-rose-700",
+};
+const FALLBACK_COLORS = [
+  "bg-violet-100 text-violet-700",
+  "bg-amber-100 text-amber-700",
+  "bg-emerald-100 text-emerald-700",
+  "bg-sky-100 text-sky-700",
+  "bg-rose-100 text-rose-700",
 ];
 
 export function MemberRow({
@@ -36,6 +48,10 @@ export function MemberRow({
   setSkipMeta,
   isSaving,
   isSaved,
+  showWeeklyCol,
+  noMeetingDays,
+  expandedDay,
+  allMemberIds,
 }: MemberRowProps) {
   const initials = member.name
     .split(" ")
@@ -44,12 +60,12 @@ export function MemberRow({
     .toUpperCase()
     .slice(0, 2);
 
-  const colorClass = AVATAR_COLORS[member.name.charCodeAt(0) % AVATAR_COLORS.length];
+  const colorClass = TEAM_AVATAR_COLORS[member.team_id] ?? FALLBACK_COLORS[member.name.charCodeAt(0) % FALLBACK_COLORS.length];
 
   return (
     <TableRow className="hover:bg-stone-50/50 border-b border-stone-100 transition-colors">
       {/* Member info — sticky left */}
-      <TableCell className="sticky left-0 z-[5] min-w-[240px] max-w-[280px] bg-white px-5 py-3 border-r border-stone-200 align-middle whitespace-normal">
+      <TableCell className="sticky left-0 z-[5] min-w-[240px] max-w-[280px] bg-white px-5 py-3 border-r border-stone-300 align-middle whitespace-normal">
         <div className="flex items-center gap-3">
           {member.avatar_url ? (
             <img
@@ -90,8 +106,17 @@ export function MemberRow({
           memberId={member.id}
           weekId={weekId}
           day={day}
+          isNoMeeting={noMeetingDays?.includes(day)}
+          isExpanded={expandedDay === day}
+          memberName={member.name}
+          allMemberIds={allMemberIds}
         />
       ))}
+
+      {/* Weekly summary cell */}
+      {showWeeklyCol && (
+        <TableCell className="min-w-[180px] p-0 align-top border-r border-stone-200 bg-violet-50/20" />
+      )}
     </TableRow>
   );
 }

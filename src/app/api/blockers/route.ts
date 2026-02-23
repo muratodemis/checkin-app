@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase";
+import * as mem from "@/lib/store";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
@@ -11,9 +12,12 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "memberId, weekId, day required" }, { status: 400 });
   }
 
+  if (mem.isMemoryMode()) {
+    return NextResponse.json(mem.getBlockers(memberId, weekId, Number(day)));
+  }
+
   const supabase = createServerClient();
-  
-  // Get blockers where this member is either the blocker or the blocked
+
   const { data: blocking, error: e1 } = await supabase
     .from("blockers")
     .select("*, blocker:blocker_id(name,role), blocked:blocked_id(name,role)")
@@ -52,8 +56,13 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
-  const supabase = createServerClient();
 
+  if (mem.isMemoryMode()) {
+    const blocker = mem.createBlocker(body);
+    return NextResponse.json(blocker);
+  }
+
+  const supabase = createServerClient();
   const { data, error } = await supabase
     .from("blockers")
     .insert({

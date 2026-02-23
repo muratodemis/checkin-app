@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
   if (error && error.code === "PGRST116") {
     const { data: newWeek, error: createError } = await supabase
       .from("weeks")
-      .insert({ week_start: date, active_days: [1, 3, 5] })
+      .insert({ week_start: date, active_days: [1, 2, 3, 4, 5] })
       .select()
       .single();
 

@@ -22,6 +22,7 @@ export function DailyFeedbackCard({ memberId, memberName, weekId, dayNumber, wee
   const [moodNote, setMoodNote] = useState("");
   const [generalNotes, setGeneralNotes] = useState("");
   const [focused, setFocused] = useState(false);
+  const [generalDirty, setGeneralDirty] = useState(false);
 
   // Build question list
   const questions = [
@@ -37,16 +38,28 @@ export function DailyFeedbackCard({ memberId, memberName, weekId, dayNumber, wee
   const totalSteps = questions.length;
   const current = questions[step];
 
-  // Load existing feedback
+  // Load existing feedback + main page note as fallback for general_notes
   useEffect(() => {
-    fetch(apiPath(`api/checkin-feedback?memberId=${memberId}&weekId=${weekId}&day=${dayNumber}`))
-      .then(r => r.json())
-      .then((items: CheckinFeedback[]) => {
+    const loadData = async () => {
+      try {
+        const [feedbackRes, notesRes] = await Promise.all([
+          fetch(apiPath(`api/checkin-feedback?memberId=${memberId}&weekId=${weekId}&day=${dayNumber}`)),
+          fetch(apiPath(`api/notes?week_id=${weekId}`)),
+        ]);
+
+        const items: CheckinFeedback[] = feedbackRes.ok ? await feedbackRes.json() : [];
+        const allNotes: { member_id: string; day: number; content: string }[] = notesRes.ok ? await notesRes.json() : [];
+
         const map: Record<string, CheckinFeedback> = {};
+        let hasGeneralNotes = false;
+
         for (const item of items) {
           const key = `${item.question_type}-${item.question_index ?? 0}`;
           map[key] = item;
-          if (item.question_type === "general_notes") setGeneralNotes(item.answer_text || "");
+          if (item.question_type === "general_notes" && item.answer_text?.trim()) {
+            setGeneralNotes(item.answer_text);
+            hasGeneralNotes = true;
+          }
           if (item.question_type === "weekly_question") {
             setLocalAnswers(prev => ({ ...prev, [item.question_index ?? 0]: item.answer_text || "" }));
           }
@@ -56,8 +69,16 @@ export function DailyFeedbackCard({ memberId, memberName, weekId, dayNumber, wee
           }
         }
         setFeedbackMap(map);
-      })
-      .catch(() => {});
+
+        if (!hasGeneralNotes) {
+          const mainNote = allNotes.find(n => n.member_id === memberId && n.day === dayNumber);
+          if (mainNote?.content) {
+            setGeneralNotes(mainNote.content);
+          }
+        }
+      } catch { /* silent */ }
+    };
+    loadData();
   }, [memberId, weekId, dayNumber]);
 
   const saveFeedback = useCallback((type: string, index: number, data: Record<string, unknown>) => {
@@ -75,13 +96,14 @@ export function DailyFeedbackCard({ memberId, memberName, weekId, dayNumber, wee
     }).catch(() => {});
   }, [memberId, weekId, dayNumber]);
 
-  // Debounced saves
+  // Debounced saves — only when user has edited
   useEffect(() => {
+    if (!generalDirty) return;
     const t = setTimeout(() => {
       if (current?.type === "general_notes") saveFeedback("general_notes", 0, { answer_text: generalNotes });
     }, 500);
     return () => clearTimeout(t);
-  }, [generalNotes]);
+  }, [generalNotes, generalDirty]);
 
   useEffect(() => {
     const t = setTimeout(() => {
@@ -135,7 +157,7 @@ export function DailyFeedbackCard({ memberId, memberName, weekId, dayNumber, wee
             ) : (
               <textarea
                 value={generalNotes}
-                onChange={e => setGeneralNotes(e.target.value)}
+                onChange={e => { setGeneralNotes(e.target.value); setGeneralDirty(true); }}
                 onFocus={() => setFocused(true)}
                 onBlur={() => setFocused(false)}
                 placeholder="Write your general notes..."

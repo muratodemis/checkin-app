@@ -1,13 +1,12 @@
 "use client";
 
-import { Plus, MessageSquare, Settings, Users, ListTree, List, CalendarDays } from "lucide-react";
+import { Plus, MessageSquare, Settings, Users, ListTree, List, CalendarDays, X } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
 import {
   Table,
   TableHeader,
@@ -16,6 +15,7 @@ import {
   TableHead,
 } from "@/components/ui/table";
 import { DAY_NAMES, TeamWithMembers } from "@/types";
+import { getISOWeekNumber } from "@/lib/utils";
 import { WeekNavigator } from "./WeekNavigator";
 import { DayColumnHeader } from "./DayColumnHeader";
 import { TeamGroup } from "./TeamGroup";
@@ -40,6 +40,18 @@ export function CheckinTable() {
   const [showQuestions, setShowQuestions] = useState(false);
   const [showTeamManager, setShowTeamManager] = useState(false);
   const [isGrouped, setIsGrouped] = useState(true);
+  const [showWeeklyCol, setShowWeeklyCol] = useState(true);
+  const [weeklyHeaderHovered, setWeeklyHeaderHovered] = useState(false);
+  const [noMeetingDays, setNoMeetingDays] = useState<number[]>([]);
+  const [expandedDay, setExpandedDay] = useState<number | null>(null);
+
+  const weekNumber = weekStart ? getISOWeekNumber(weekStart) : null;
+
+  const toggleNoMeeting = (day: number) => {
+    setNoMeetingDays((prev) =>
+      prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day]
+    );
+  };
 
   const activeDays = Array.isArray(week?.active_days) ? week.active_days : [];
   const availableDays = [1, 2, 3, 4, 5].filter((d) => !activeDays.includes(d));
@@ -53,6 +65,11 @@ export function CheckinTable() {
     });
     return map;
   }, [safeNotes, activeDays]);
+
+  const allMemberIds = useMemo(() =>
+    safeTeams.flatMap((t) => (t.members || []).map((m) => ({ id: m.id, name: m.name }))),
+    [safeTeams]
+  );
 
   const activeQuestions = questions?.questions?.filter((q: string) => q.trim()) || [];
   const isLoading = (weekLoading || teamsLoading) && !weekError && !teamsError;
@@ -110,6 +127,19 @@ export function CheckinTable() {
                   ))}
                 </DropdownMenuContent>
               </DropdownMenu>
+
+              {/* Weekly column toggle */}
+              {!showWeeklyCol && (
+                <label className="flex items-center gap-1.5 h-8 px-3 rounded-lg text-[13px] font-medium text-stone-600 hover:text-stone-900 hover:bg-stone-100 transition-colors cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={showWeeklyCol}
+                    onChange={(e) => setShowWeeklyCol(e.target.checked)}
+                    className="accent-violet-600 w-3.5 h-3.5"
+                  />
+                  Weekly
+                </label>
+              )}
 
               {/* Sorular */}
               <button
@@ -181,12 +211,12 @@ export function CheckinTable() {
           </div>
         ) : (
           /* ─── THE TABLE ─── */
-          <div className="rounded-2xl border border-stone-200 bg-white overflow-hidden shadow-sm shadow-stone-100">
+          <div className="rounded-2xl border border-stone-200 bg-white overflow-x-auto shadow-sm shadow-stone-100">
             <Table>
               <TableHeader>
                 <TableRow className="hover:bg-transparent border-b border-stone-200">
                   {/* İsim column */}
-                  <TableHead className="sticky left-0 z-20 min-w-[240px] bg-stone-50 px-5 py-3 text-xs font-semibold text-stone-500 uppercase tracking-wider border-r border-stone-200">
+                  <TableHead className="sticky left-0 z-20 min-w-[240px] bg-stone-50 px-5 py-3 text-xs font-semibold text-stone-500 uppercase tracking-wider border-r border-stone-300">
                     İsim
                   </TableHead>
 
@@ -198,8 +228,35 @@ export function CheckinTable() {
                       weekStart={weekStart}
                       hasNotes={dayHasNotes[day] || false}
                       onRemove={removeDay}
+                      isNoMeeting={noMeetingDays.includes(day)}
+                      onToggleNoMeeting={() => toggleNoMeeting(day)}
+                      isExpanded={expandedDay === day}
+                      onToggleExpand={() => setExpandedDay(expandedDay === day ? null : day)}
                     />
                   ))}
+
+                  {/* Weekly summary column */}
+                  {showWeeklyCol && (
+                    <TableHead
+                      className="relative min-w-[180px] bg-stone-50 px-5 py-3 align-bottom border-r border-stone-300"
+                      onMouseEnter={() => setWeeklyHeaderHovered(true)}
+                      onMouseLeave={() => setWeeklyHeaderHovered(false)}
+                    >
+                      <div className="flex items-center gap-2">
+                        <CalendarDays className="h-3.5 w-3.5 text-violet-500" />
+                        <span className="text-xs font-semibold text-stone-800">
+                          Week {weekNumber}
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => setShowWeeklyCol(false)}
+                        title="Kolonu gizle"
+                        className={`absolute top-2 right-2 h-5 w-5 flex items-center justify-center rounded-md text-stone-400 hover:text-stone-700 hover:bg-stone-200/60 transition-all ${weeklyHeaderHovered ? "opacity-100" : "opacity-0"}`}
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </TableHead>
+                  )}
                 </TableRow>
               </TableHeader>
 
@@ -217,6 +274,10 @@ export function CheckinTable() {
                         setSkipMeta={setSkipMeta}
                         isSaving={isSaving}
                         isSaved={isSaved}
+                        showWeeklyCol={showWeeklyCol}
+                        noMeetingDays={noMeetingDays}
+                        expandedDay={expandedDay}
+                        allMemberIds={allMemberIds}
                       />
                     ))
                   : safeTeams.flatMap((team: TeamWithMembers) =>
@@ -232,6 +293,10 @@ export function CheckinTable() {
                           setSkipMeta={setSkipMeta}
                           isSaving={isSaving}
                           isSaved={isSaved}
+                          showWeeklyCol={showWeeklyCol}
+                          noMeetingDays={noMeetingDays}
+                          expandedDay={expandedDay}
+                          allMemberIds={allMemberIds}
                         />
                       ))
                     )}

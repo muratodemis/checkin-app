@@ -17,6 +17,10 @@ interface TeamGroupProps {
   setSkipMeta: (memberId: string, day: number, meta: MeetingSkipMeta | null) => void;
   isSaving: (memberId: string, day: number) => boolean;
   isSaved: (memberId: string, day: number) => boolean;
+  showWeeklyCol?: boolean;
+  noMeetingDays?: number[];
+  expandedDay?: number | null;
+  allMemberIds?: { id: string; name: string }[];
 }
 
 export function TeamGroup({
@@ -29,6 +33,10 @@ export function TeamGroup({
   setSkipMeta,
   isSaving,
   isSaved,
+  showWeeklyCol,
+  noMeetingDays,
+  expandedDay,
+  allMemberIds,
 }: TeamGroupProps) {
   const [collapsed, setCollapsed] = useState(false);
   const members = Array.isArray(team.members) ? team.members : [];
@@ -41,7 +49,7 @@ export function TeamGroup({
         className="cursor-pointer select-none hover:bg-stone-100/60 bg-stone-50/80 border-b border-stone-200"
       >
         <TableCell
-          colSpan={activeDays.length + 1}
+          colSpan={activeDays.length + 1 + (showWeeklyCol ? 1 : 0)}
           className="px-5 py-2 border-r-0 whitespace-normal"
         >
           <div className="flex items-center gap-2.5">
@@ -75,6 +83,10 @@ export function TeamGroup({
             setSkipMeta={setSkipMeta}
             isSaving={isSaving}
             isSaved={isSaved}
+            showWeeklyCol={showWeeklyCol}
+            noMeetingDays={noMeetingDays}
+            expandedDay={expandedDay}
+            allMemberIds={allMemberIds}
           />
         ))}
     </>

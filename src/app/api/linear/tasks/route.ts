@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase";
+import * as mem from "@/lib/store";
 
 const LINEAR_API = "https://api.linear.app/graphql";
 
@@ -170,15 +171,22 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "memberId required" }, { status: 400 });
   }
 
-  // Resolve member name from our DB
-  const supabase = createServerClient();
-  const { data: member } = await supabase
-    .from("members")
-    .select("name")
-    .eq("id", memberId)
-    .single();
+  let memberName: string | null = null;
 
-  if (!member) {
+  if (mem.isMemoryMode()) {
+    const m = mem.getMember(memberId);
+    memberName = m?.name || null;
+  } else {
+    const supabase = createServerClient();
+    const { data: member } = await supabase
+      .from("members")
+      .select("name")
+      .eq("id", memberId)
+      .single();
+    memberName = member?.name || null;
+  }
+
+  if (!memberName) {
     return NextResponse.json({ error: "Member not found" }, { status: 404 });
   }
 
@@ -201,14 +209,14 @@ export async function GET(request: NextRequest) {
     const linearUsers: LinearUser[] = usersJson.data?.users?.nodes || [];
 
     // Step 2: Match our member to a Linear user
-    const matchedUser = findLinearUser(member.name, linearUsers);
+    const matchedUser = findLinearUser(memberName, linearUsers);
 
     if (!matchedUser) {
       return NextResponse.json({
         tasks: [],
-        memberName: member.name,
+        memberName,
         totalCount: 0,
-        debug: `No Linear user matched for "${member.name}"`,
+        debug: `No Linear user matched for "${memberName}"`,
       });
     }
 
@@ -263,7 +271,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       tasks,
-      memberName: member.name,
+      memberName,
       linearUser: matchedUser.displayName,
       totalCount: tasks.length,
     });

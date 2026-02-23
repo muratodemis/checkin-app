@@ -9,7 +9,11 @@ export async function GET(
   const { id } = await params;
 
   if (mem.isMemoryMode()) {
-    return NextResponse.json({ error: "Not supported in memory mode" }, { status: 404 });
+    const week = mem.getWeek(id);
+    if (!week) {
+      return NextResponse.json({ error: "Week not found" }, { status: 404 });
+    }
+    return NextResponse.json(week);
   }
 
   const supabase = createServerClient();

@@ -69,3 +69,12 @@ export function getAdjacentMonday(weekStart: string, direction: "prev" | "next")
   d.setDate(d.getDate() + (direction === "prev" ? -7 : 7));
   return toLocalDateStr(d);
 }
+
+/** ISO 8601 week number for a given "YYYY-MM-DD" */
+export function getISOWeekNumber(dateStr: string): number {
+  const d = parseLocal(dateStr);
+  const tmp = new Date(d.getTime());
+  tmp.setDate(tmp.getDate() + 3 - ((tmp.getDay() + 6) % 7));
+  const jan4 = new Date(tmp.getFullYear(), 0, 4);
+  return 1 + Math.round(((tmp.getTime() - jan4.getTime()) / 86400000 - 3 + ((jan4.getDay() + 6) % 7)) / 7);
+}
