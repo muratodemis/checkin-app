@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServerClient } from "@/lib/supabase";
+import { createAdminClient } from "@/lib/supabase";
 
 const SYSTEM_PROMPT = `You are an AI assistant for a CEO's weekly check-in tool. You analyze meeting notes about team members and extract structured data.
 
@@ -162,7 +162,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const parsed = await generateAiContent(content, member_name);
-    const supabase = createServerClient();
+    const supabase = createAdminClient();
 
     // Clear existing AI-generated notes for this member/week/day
     await supabase

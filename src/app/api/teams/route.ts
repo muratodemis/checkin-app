@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServerClient } from "@/lib/supabase";
+import { createUserClient, createAdminClient } from "@/lib/supabase";
 import * as mem from "@/lib/store";
 
 export async function GET() {
@@ -7,7 +7,7 @@ export async function GET() {
     return NextResponse.json(mem.getTeamsWithMembers());
   }
 
-  const supabase = createServerClient();
+  const supabase = await createUserClient();
 
   const { data: teams, error: teamsError } = await supabase
     .from("teams")
@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(team);
   }
 
-  const supabase = createServerClient();
+  const supabase = createAdminClient();
   const { data, error } = await supabase
     .from("teams")
     .insert({ name: body.name, sort_order: body.sort_order || 0 })

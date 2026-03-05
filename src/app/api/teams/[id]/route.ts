@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServerClient } from "@/lib/supabase";
+import { createAdminClient } from "@/lib/supabase";
 import * as mem from "@/lib/store";
 
 export async function PATCH(
@@ -14,7 +14,7 @@ export async function PATCH(
     return NextResponse.json(team);
   }
 
-  const supabase = createServerClient();
+  const supabase = createAdminClient();
   const { data, error } = await supabase
     .from("teams")
     .update(body)
@@ -40,7 +40,7 @@ export async function DELETE(
     return NextResponse.json({ success: true });
   }
 
-  const supabase = createServerClient();
+  const supabase = createAdminClient();
   const { error } = await supabase.from("teams").delete().eq("id", id);
 
   if (error) {

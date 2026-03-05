@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServerClient } from "@/lib/supabase";
+import { createUserClient } from "@/lib/supabase";
 import * as mem from "@/lib/store";
 
 export async function GET(request: NextRequest) {
@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(week);
   }
 
-  const supabase = createServerClient();
+  const supabase = await createUserClient();
 
   let { data: week, error } = await supabase
     .from("weeks")

@@ -2,9 +2,15 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { apiPath } from "@/lib/api";
+import { createBrowserClient } from "@supabase/ssr";
+
+const supabase = createBrowserClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
 export default function LoginPage() {
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -16,19 +22,20 @@ export default function LoginPage() {
     setError("");
 
     try {
-      const res = await fetch(apiPath("api/auth"), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password }),
+      const { error: authError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
       });
 
-      if (res.ok) {
-        router.push("/");
-        router.refresh();
-      } else {
-        setError("Yanlış şifre");
-        setPassword("");
+      if (authError) {
+        setError(authError.message === "Invalid login credentials"
+          ? "E-posta veya şifre hatalı"
+          : authError.message);
+        return;
       }
+
+      router.push("/");
+      router.refresh();
     } catch {
       setError("Bir hata oluştu");
     } finally {
@@ -49,23 +56,31 @@ export default function LoginPage() {
             </svg>
           </div>
           <h1 className="text-[22px] font-semibold text-stone-900 tracking-tight">Check-in Manager</h1>
-          <p className="text-stone-400 mt-1.5 text-sm">Devam etmek için şifrenizi girin</p>
+          <p className="text-stone-400 mt-1.5 text-sm">Devam etmek için giriş yapın</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-3">
+          <input
+            type="email"
+            placeholder="E-posta"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full h-11 px-4 text-sm rounded-xl bg-white border border-stone-200 text-stone-900 placeholder:text-stone-300 focus:outline-none focus:ring-2 focus:ring-violet-200 focus:border-transparent transition-all"
+            autoFocus
+            autoComplete="email"
+          />
           <input
             type="password"
             placeholder="Şifre"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className="w-full h-11 px-4 text-sm rounded-xl bg-white border border-stone-200 text-stone-900 placeholder:text-stone-300 focus:outline-none focus:ring-2 focus:ring-violet-200 focus:border-transparent transition-all"
-            autoFocus
             autoComplete="current-password"
           />
           {error && <p className="text-[13px] text-red-500 text-center">{error}</p>}
           <button
             type="submit"
-            disabled={loading || !password}
+            disabled={loading || !email || !password}
             className="w-full h-11 rounded-xl bg-violet-600 hover:bg-violet-700 active:bg-violet-800 text-white text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {loading ? "Giriş yapılıyor..." : "Giriş Yap"}

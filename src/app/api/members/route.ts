@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServerClient } from "@/lib/supabase";
+import { createAdminClient } from "@/lib/supabase";
 import * as mem from "@/lib/store";
 
 export async function POST(request: NextRequest) {
@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(member);
   }
 
-  const supabase = createServerClient();
+  const supabase = createAdminClient();
   const { data, error } = await supabase
     .from("members")
     .insert({

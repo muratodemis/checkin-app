@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServerClient } from "@/lib/supabase";
+import { createUserClient } from "@/lib/supabase";
 import * as mem from "@/lib/store";
 
 export async function GET(request: NextRequest) {
@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(mem.getNotesByWeek(weekId));
   }
 
-  const supabase = createServerClient();
+  const supabase = await createUserClient();
   const { data, error } = await supabase
     .from("checkin_notes")
     .select("*")
@@ -34,7 +34,7 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json(note);
   }
 
-  const supabase = createServerClient();
+  const supabase = await createUserClient();
   const { data, error } = await supabase
     .from("checkin_notes")
     .upsert(

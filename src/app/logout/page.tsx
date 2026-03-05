@@ -2,15 +2,18 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { apiPath } from "@/lib/api";
+import { createBrowserClient } from "@supabase/ssr";
+
+const supabase = createBrowserClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
 export default function LogoutPage() {
   const router = useRouter();
 
   useEffect(() => {
-    fetch(apiPath("api/auth"), { method: "DELETE" })
-      .then(() => router.replace("/login"))
-      .catch(() => router.replace("/login"));
+    supabase.auth.signOut().finally(() => router.replace("/login"));
   }, [router]);
 
   return (

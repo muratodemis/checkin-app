@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServerClient } from "@/lib/supabase";
+import { createUserClient } from "@/lib/supabase";
 import * as mem from "@/lib/store";
 
 export async function GET(
@@ -16,7 +16,7 @@ export async function GET(
     return NextResponse.json(week);
   }
 
-  const supabase = createServerClient();
+  const supabase = await createUserClient();
   const { data, error } = await supabase
     .from("weeks")
     .select("*")
@@ -42,7 +42,7 @@ export async function PATCH(
     return NextResponse.json(week);
   }
 
-  const supabase = createServerClient();
+  const supabase = await createUserClient();
   const { data, error } = await supabase
     .from("weeks")
     .update({ active_days: body.active_days })

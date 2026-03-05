@@ -23,7 +23,8 @@ import { MemberRow } from "./MemberRow";
 import { useWeek } from "@/lib/hooks/useWeek";
 import { useNotes } from "@/lib/hooks/useNotes";
 import { useTeams } from "@/lib/hooks/useTeams";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { useSWRConfig } from "swr";
 import { WeeklyQuestions } from "@/components/questions/WeeklyQuestions";
 import { TeamManager } from "@/components/team-manager/TeamManager";
 
@@ -36,6 +37,24 @@ export function CheckinTable() {
 
   const { teams, isLoading: teamsLoading, error: teamsError } = useTeams();
   const { notes, getNoteContent, saveNote, getSkipMeta, setSkipMeta, isSaving, isSaved } = useNotes(week?.id);
+  const { mutate: globalMutate } = useSWRConfig();
+
+  useEffect(() => {
+    const today = new Date().toISOString().slice(0, 10);
+    const lastRefresh = localStorage.getItem("checkin_last_refresh");
+    if (lastRefresh !== today) {
+      globalMutate(() => true, undefined, { revalidate: true });
+      localStorage.setItem("checkin_last_refresh", today);
+    }
+    const interval = setInterval(() => {
+      const now = new Date().toISOString().slice(0, 10);
+      if (now !== localStorage.getItem("checkin_last_refresh")) {
+        globalMutate(() => true, undefined, { revalidate: true });
+        localStorage.setItem("checkin_last_refresh", now);
+      }
+    }, 60_000);
+    return () => clearInterval(interval);
+  }, [globalMutate]);
 
   const [showQuestions, setShowQuestions] = useState(false);
   const [showTeamManager, setShowTeamManager] = useState(false);

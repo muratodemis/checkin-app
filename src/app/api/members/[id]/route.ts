@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServerClient } from "@/lib/supabase";
+import { createUserClient, createAdminClient } from "@/lib/supabase";
 import * as mem from "@/lib/store";
 
 export async function GET(
@@ -16,7 +16,7 @@ export async function GET(
     return NextResponse.json(member);
   }
 
-  const supabase = createServerClient();
+  const supabase = await createUserClient();
   const { data, error } = await supabase
     .from("members")
     .select("*")
@@ -42,7 +42,7 @@ export async function PATCH(
     return NextResponse.json(member);
   }
 
-  const supabase = createServerClient();
+  const supabase = createAdminClient();
   const { data, error } = await supabase
     .from("members")
     .update(body)
@@ -68,7 +68,7 @@ export async function DELETE(
     return NextResponse.json(member);
   }
 
-  const supabase = createServerClient();
+  const supabase = createAdminClient();
   const { data, error } = await supabase
     .from("members")
     .update({ is_active: false })

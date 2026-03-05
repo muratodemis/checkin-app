@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServerClient } from "@/lib/supabase";
+import { createUserClient } from "@/lib/supabase";
 import * as mem from "@/lib/store";
 
 export async function PATCH(
@@ -14,7 +14,7 @@ export async function PATCH(
     return NextResponse.json(commitment);
   }
 
-  const supabase = createServerClient();
+  const supabase = await createUserClient();
   const updateData: Record<string, unknown> = { ...body };
   if (body.is_completed === true) {
     updateData.completed_at = new Date().toISOString();
@@ -44,7 +44,7 @@ export async function DELETE(
     return NextResponse.json({ success: true });
   }
 
-  const supabase = createServerClient();
+  const supabase = await createUserClient();
   const { error } = await supabase.from("commitments").delete().eq("id", id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ success: true });

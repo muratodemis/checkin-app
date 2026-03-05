@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServerClient } from "@/lib/supabase";
+import { createUserClient } from "@/lib/supabase";
 import * as mem from "@/lib/store";
 
 export async function GET(request: NextRequest) {
@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(mem.getBlockers(memberId, weekId, Number(day)));
   }
 
-  const supabase = createServerClient();
+  const supabase = await createUserClient();
 
   const { data: blocking, error: e1 } = await supabase
     .from("blockers")
@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(blocker);
   }
 
-  const supabase = createServerClient();
+  const supabase = await createUserClient();
   const { data, error } = await supabase
     .from("blockers")
     .insert({

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServerClient } from "@/lib/supabase";
+import { createUserClient } from "@/lib/supabase";
 import * as mem from "@/lib/store";
 
 const LINEAR_API = "https://api.linear.app/graphql";
@@ -177,7 +177,7 @@ export async function GET(request: NextRequest) {
     const m = mem.getMember(memberId);
     memberName = m?.name || null;
   } else {
-    const supabase = createServerClient();
+    const supabase = await createUserClient();
     const { data: member } = await supabase
       .from("members")
       .select("name")

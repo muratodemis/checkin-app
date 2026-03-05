@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServerClient } from "@/lib/supabase";
+import { createUserClient } from "@/lib/supabase";
 import * as mem from "@/lib/store";
 
 export async function PATCH(
@@ -14,7 +14,7 @@ export async function PATCH(
     return NextResponse.json(note);
   }
 
-  const supabase = createServerClient();
+  const supabase = await createUserClient();
   const { data, error } = await supabase
     .from("checkin_ai_notes")
     .update(body)
@@ -37,7 +37,7 @@ export async function DELETE(
     return NextResponse.json({ success: true });
   }
 
-  const supabase = createServerClient();
+  const supabase = await createUserClient();
   const { error } = await supabase.from("checkin_ai_notes").delete().eq("id", id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ success: true });
